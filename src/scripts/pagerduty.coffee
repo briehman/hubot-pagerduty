@@ -37,7 +37,10 @@ getTextDate = (date) ->
   month = date.getMonth() + 1
   day = date.getDate()
   year = date.getFullYear()
-  return "#{year}-#{zeropad(month)}-#{zeropad(day)}"
+  hours = date.getHours()
+  minutes = date.getMinutes()
+  seconds = date.getSeconds()
+  return "#{year}-#{zeropad(month)}-#{zeropad(day)} #{zeropad(hours)}:#{zeropad(minutes)}:#{zeropad(seconds)}"
 
 # more ghetto shit -erikh
 getUTCTextTime = (date) ->
@@ -47,28 +50,7 @@ getUTCTextTime = (date) ->
   hours = date.getUTCHours()
   minutes = date.getUTCMinutes()
 
-  # this is pretty horrible
-  if hours < 10
-    hours = "0#{hours}"
-  else
-    hours = "#{hours}"
-
-  if minutes < 10
-    minutes = "0#{minutes}"
-  else
-    minutes = "#{minutes}"
-
-  if month < 10
-    month = "0#{month}"
-  else
-    month = "#{month}"
-
-  if day < 10
-    day = "0#{day}"
-  else
-    day = "#{day}"
-
-  today += "#{month}-#{day}T#{hours}:#{minutes}Z"
+  today += "#{zeropad(month)}-#{zeropad(day)}T#{zeropad(hours)}:#{zeropad(minutes)}Z"
   return today
 
 getFetcher = (schedule, func) ->
