@@ -53,8 +53,8 @@ getUTCTextTime = (date) ->
   today += "#{zeropad(month)}-#{zeropad(day)}T#{zeropad(hours)}:#{zeropad(minutes)}Z"
   return today
 
-getFetcher = (schedule, func) ->
-  return (msg, today, tomorrow) ->
+getFetcher = (schedule, func, today, tomorrow) ->
+  return (msg) ->
     schedule_name = schedule[0]
     schedule_id   = schedule[1]
     msg
@@ -258,9 +258,9 @@ module.exports = (robot) ->
     # make an attempt to do this synchronously
     sync_call = null
     for schedule in schedules.reverse()
-      do (schedule) ->
-        sync_call = getFetcher(schedule, sync_call)
-    sync_call(msg, today, tomorrow)
+      do (schedule, today, tomorrow) ->
+        sync_call = getFetcher(schedule, sync_call, today, tomorrow)
+    sync_call(msg)
 
   robot.respond /urgent (.*)/i, (msg) ->
     incident_message = msg.match[1]
