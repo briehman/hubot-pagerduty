@@ -254,7 +254,7 @@ module.exports = (robot) ->
   robot.respond /oncall/i, (msg) ->
     today = new Date()
     tomorrow = new Date(today.getTime() + 86400000)
-    msg.send "Oncall schedule for #{getTextDate(today)} - #{getTextDate(tomorrow)}:"
+    msg.send "Oncall schedule:"
     # make an attempt to do this synchronously
     sync_call = null
     for schedule in schedules.reverse()
