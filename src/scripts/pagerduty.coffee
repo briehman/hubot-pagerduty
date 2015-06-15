@@ -259,6 +259,9 @@ module.exports = (robot) ->
     sync_call = null
     for schedule in schedules.reverse()
       do (schedule, today, tomorrow) ->
+        if schedule[2]
+          today = new Date(today.getTime() + schedule[2])
+          tomorrow  = new Date(tomorrow.getTime() + schedule[2])
         sync_call = getFetcher(schedule, sync_call, today, tomorrow)
     sync_call(msg)
 
