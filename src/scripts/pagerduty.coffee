@@ -11,6 +11,7 @@
 #
 
 fs = require('fs')
+moment = require('moment')
 config = JSON.parse(fs.readFileSync("pagerdutyrc"))
 
 token     = config.token
@@ -34,13 +35,8 @@ zeropad = (number) ->
 # this is seriously some ghetto shit. if someone else knows how to make it
 # better, please do. -erikh
 getTextDate = (date) ->
-  month = date.getMonth() + 1
-  day = date.getDate()
-  year = date.getFullYear()
-  hours = date.getHours()
-  minutes = date.getMinutes()
-  seconds = date.getSeconds()
-  return "#{year}-#{zeropad(month)}-#{zeropad(day)} #{zeropad(hours)}:#{zeropad(minutes)}:#{zeropad(seconds)}"
+  return date.toISOString()
+  # return "#{year}-#{zeropad(month)}-#{zeropad(day)}T#{zeropad(hours)}:#{zeropad(minutes)}:#{zeropad(seconds)}"
 
 # more ghetto shit -erikh
 getUTCTextTime = (date) ->
@@ -53,22 +49,30 @@ getUTCTextTime = (date) ->
   today += "#{zeropad(month)}-#{zeropad(day)}T#{zeropad(hours)}:#{zeropad(minutes)}Z"
   return today
 
-getFetcher = (schedule, func, today, tomorrow) ->
+getFetcher = (schedule, func, since, onUntil) ->
   return (msg) ->
     schedule_name = schedule[0]
     schedule_id   = schedule[1]
     msg
       .http("https://#{subdomain}.pagerduty.com/api/v1/schedules/"+schedule_id+"/entries")
       .query
-        since: getTextDate(today)
-        until: getTextDate(tomorrow)
+        since: since.toISOString()
+        until: onUntil.toISOString()
       .headers
         "Content-type": "application/json"
         "Authorization": "Token token=" + token
       .get() (err, res, body) ->
         result = JSON.parse(body)
-        msg.send "#{schedule_name}: #{result.entries[0].user.name}" 
-        func(msg, today, tomorrow) if func?
+        if result.total > 1
+            for entry in result.entries
+                start = moment(start).format("YYYY-MM-DD HH:mm:ss Z")
+                end = moment(end).format("YYYY-MM-DD HH:mm:ss Z")
+                msg.send "#{schedule_name} #{entry.user.name}: #{start} - #{end}"
+        else if result.total == 1
+            msg.send "#{schedule_name}: #{result.entries[0].user.name}"
+        else
+            msg.send "#{schedule_name}: N/A"
+        func(msg, since, onUntil) if func?
 
 setOverride = (msg, time, userid) ->
   msg
@@ -254,7 +258,7 @@ module.exports = (robot) ->
   robot.respond /oncall/i, (msg) ->
     today = new Date()
     tomorrow = new Date(today.getTime() + 86400000)
-    msg.send "Oncall schedule:"
+    msg.send "Oncall schedule: #{today.toISOString()}"
     # make an attempt to do this synchronously
     sync_call = null
     for schedule in schedules.reverse()

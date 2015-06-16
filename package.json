@@ -17,7 +17,8 @@
     "lib": "./src"
   },
   "dependencies": {
-    "hubot": ">= 2.3.0"
+    "hubot": ">= 2.3.0",
+    "moment": "~2.10.3"
   },
   "author": "Hotel Tonight",
   "license": "MIT"
